@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mercadolibre/golang-restclient/rest"
 	"github.com/PreetSIngh8929/bookstore-oauth-go/oauth/errors"
+	"github.com/mercadolibre/golang-restclient/rest"
 )
 
 const (
@@ -72,6 +72,9 @@ func AuthenticatRequest(request *http.Request) *errors.RestErr {
 	}
 	at, err := getAccessToken(accessTokenId)
 	if err != nil {
+		if err.Status == http.StatusNotFound {
+			return nil
+		}
 		return err
 	}
 	request.Header.Add(headerXClientId, fmt.Sprintf("%v", at.ClientId))
@@ -96,8 +99,9 @@ func getAccessToken(accessTokenId string) (*accessToken, *errors.RestErr) {
 		var restErr errors.RestErr
 		err := json.Unmarshal(response.Bytes(), &restErr)
 		if err != nil {
-			return nil, errors.NewInternalServerError("invalid user interface when trying to get access token")
+			return nil, errors.NewInternalServerError("invalid error interface when trying to get access token")
 		}
+
 		return nil, &restErr
 	}
 	var at accessToken
